@@ -136,7 +136,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 do_client_quit(State, Ref, ClientPID) ->
     CurrClients = State#serv_st.nicks,
 
-    UpdatedClients = maps:remove(ClientPID,CurrClients),
+    %%UpdatedClients = maps:remove(ClientPID,CurrClients),
 
     Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     AllChats = State#serv_st.registrations,
