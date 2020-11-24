@@ -134,7 +134,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
-    CurrClients = State#serv_st.nicks,
+    %%CurrClients = State#serv_st.nicks,
 
     %%UpdatedClients = maps:remove(ClientPID,CurrClients),
 
