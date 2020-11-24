@@ -69,7 +69,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
 	RegMap = State#serv_st.registrations,
 
    case maps:is_key(ChatName,ChatMap) of
-   		false -> NewChatPID = spawn(?MODULE, start_chatroom, [ChatName]),
+   		false -> NewChatPID = spawn(?MODULE, chatroom:start_chatroom, [ChatName]),
    				 NewChatMap = maps:put(ChatName,NewChatPID,ChatMap),   				
 
 				NewChatPID!{self(),Ref,register,ClientPID,CNickName},
