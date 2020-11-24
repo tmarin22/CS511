@@ -117,7 +117,8 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     CurrNicks = maps:values(CurrClients),
 
     case lists:member(NewNick,CurrNicks) of
-    	true -> ClientPID!{self(), Ref, err_nick_used};
+    	true -> ClientPID!{self(), Ref, err_nick_used},
+                State;
     	false -> UpdatedClients = maps:update(ClientPID,NewNick, CurrClients),
     				Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     				AllChats = State#serv_st.registrations,
