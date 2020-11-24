@@ -72,7 +72,7 @@ do_join(ChatName, ClientPID, Ref, State) ->
    		false -> NewChatPID = spawn(?MODULE, start_chatroom, [ChatName]),
    				 NewChatMap = maps:put(ChatName,NewChatPID,ChatMap),   				
 
-				NewChatPID!{self(),ref,register,ClientPID,CNickName},
+				NewChatPID!{self(),Ref,register,ClientPID,CNickName},
 
 				NewRegMap = maps:put(ChatName, [ClientPID], RegMap),
 
@@ -80,9 +80,9 @@ do_join(ChatName, ClientPID, Ref, State) ->
 
    		true -> ChatPID = maps:get(ChatName, ChatMap),
 
-				ChatPID!{self(),ref,register,ClientPID,CNickName},
+				ChatPID!{self(),Ref,register,ClientPID,CNickName},
 
-				NewRoomRegList =  [ClientPID] ++ maps:get(ChatName,RegMap)
+				NewRoomRegList =  [ClientPID] ++ maps:get(ChatName,RegMap),
 
 				NewRegMap = maps:update(ChatName, NewRoomRegList, RegMap),
 
@@ -119,7 +119,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     case lists:member(NewNick,CurrNicks) of
     	true -> ClientPID!{self(), Ref, err_nick_used};
     	false -> UpdatedClients = maps:update(ClientPID,NewNick, CurrClients),
-    				Pred = fun(_K,V) -> lists:member(ClientPID, V) = true end,
+    				Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     				AllChats = State#serv_st.registrations,
     				ChatsWithClient = maps:filter(Pred,AllChats),
     				ChatPIDS = maps:keys(ChatsWithClient),
@@ -128,8 +128,8 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 
     				lists:foreach(Fun,ChatPIDS),
 
-    				ClientPID!{self(),Ref,ok_nick}
-    				State#serv_st{nicks=UpdatedClients}.
+    				ClientPID!{self(),Ref,ok_nick},
+    				State#serv_st{nicks=UpdatedClients}
     end.
 
 %% executes client quit protocol from server perspective
@@ -138,7 +138,7 @@ do_client_quit(State, Ref, ClientPID) ->
 
     UpdatedClients = maps:remove(ClientPID,CurrClients),
 
-    Pred = fun(_K,V) -> lists:member(ClientPID, V) = true end,
+    Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     AllChats = State#serv_st.registrations,
     ChatsWithClient = maps:filter(Pred,AllChats),
     ChatPIDS = maps:keys(ChatsWithClient),
@@ -150,5 +150,5 @@ do_client_quit(State, Ref, ClientPID) ->
 
     %% PENDING: Remove clients from server registration list
 
-    ClientPID!{self(),Ref,ack_quit}
+    ClientPID!{self(),Ref,ack_quit}.
 
