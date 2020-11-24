@@ -84,4 +84,4 @@ do_propegate_message(State, Ref, ClientPID, Message) ->
 
     NewHistory = History ++ [{SendingClient,Message}],
 
-    State#chat_st{history=NewHistory}
+    State#chat_st{history=NewHistory}.
