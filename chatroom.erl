@@ -59,9 +59,9 @@ do_unregister(State, ClientPID) ->
 
 %% This function should update the nickname of specified client.
 do_update_nick(State, ClientPID, NewNick) ->
-     ConnClients = State#chat_st.registrations,
+    ConnClients = State#chat_st.registrations,
 
-    NewConn = maps:update(ClientPID, NewNick),
+    NewConn = maps:update(ClientPID, NewNick, ConnClients),
 
     State#chat_st{registrations=NewConn}.
 
@@ -70,7 +70,7 @@ do_update_nick(State, ClientPID, NewNick) ->
 do_propegate_message(State, Ref, ClientPID, Message) ->
     ConnClients = State#chat_st.registrations,
 
-    SendingClient = maps:get(ClientPID,ConnClients)
+    SendingClient = maps:get(ClientPID,ConnClients),
 
     ConnPIDs = maps:keys(ConnClients),
 
