@@ -127,7 +127,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     				Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     				AllChats = State#serv_st.registrations,
     				ChatsWithClient = maps:filter(Pred,AllChats),
-    				ChatPIDS = maps:keys(ChatsWithClient),
+    				ChatPIDS = maps:values(ChatsWithClient),
 
     				send_new_nick(ChatPIDS, Ref, ClientPID, NewNick),
 
