@@ -126,8 +126,17 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     	false -> UpdatedClients = maps:update(ClientPID, NewNick, CurrClients),
     				Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     				AllChats = State#serv_st.registrations,
-    				ChatsWithClient = maps:filter(Pred,AllChats),
-    				ChatPIDS = maps:values(ChatsWithClient),
+    				ChatNamesWithClientMap = maps:filter(Pred,AllChats),
+    				
+                    ChatNamesWithClient = maps:keys(ChatNamesWithClientMap),
+
+                    CurrChatRooms = State#serv_st.chatrooms,
+
+                    ChatNamesWithClientMap2 = maps:with(ChatNamesWithClient,CurrChatRooms),
+
+                    ChatPIDS = maps:values(ChatNamesWithClientMap2),
+
+
 
     				send_new_nick(ChatPIDS, Ref, ClientPID, NewNick),
 
