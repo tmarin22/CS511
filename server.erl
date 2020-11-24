@@ -145,8 +145,6 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     end.
 
 
-
-
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
     CurrClients = State#serv_st.nicks,
@@ -168,9 +166,9 @@ do_client_quit(State, Ref, ClientPID) ->
 
     lists:foreach(Fun,ChatPIDS),
 
-    Fun2 = fun(_K, V1) -> lists:delete(ClientPID,V1),
+    Fun2 = fun(_K, V1) -> lists:delete(ClientPID,V1) end,
 
-    FinalRegistration = maps:map(Fun,ChatNamesWithClientMap),
+    FinalRegistration = maps:map(Fun2,ChatNamesWithClientMap),
 
     ClientPID!{self(),Ref,ack_quit},
 
