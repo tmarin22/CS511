@@ -76,7 +76,7 @@ do_propegate_message(State, Ref, ClientPID, Message) ->
 
     RecClients = lists:delete(ClientPID, ConnPIDs),
 
-    Fun = fun(RecPid) -> RecPid!{request,self(),Ref,{incoming_msg,SendingClient,State#chat_st.name,Message}},
+    Fun = fun(RecPid) -> RecPid!{request,self(),Ref,{incoming_msg,SendingClient,State#chat_st.name,Message}} end,
 
     lists:foreach(Fun,RecClients),
 
