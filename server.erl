@@ -144,23 +144,35 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     				State#serv_st{nicks=UpdatedClients}
     end.
 
+
+
+
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
-    %%CurrClients = State#serv_st.nicks,
+    CurrClients = State#serv_st.nicks,
 
-    %%UpdatedClients = maps:remove(ClientPID,CurrClients),
+    UpdatedClients = maps:remove(ClientPID,CurrClients),
 
     Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     AllChats = State#serv_st.registrations,
-    ChatsWithClient = maps:filter(Pred,AllChats),
-    ChatPIDS = maps:keys(ChatsWithClient),
+    ChatNamesWithClientMap = maps:filter(Pred,AllChats),
+                    
+    ChatNamesWithClient = maps:keys(ChatNamesWithClientMap),
+    CurrChatRooms = State#serv_st.chatrooms,
+
+    ChatNamesWithClientMap2 = maps:with(ChatNamesWithClient,CurrChatRooms),
+
+    ChatPIDS = maps:values(ChatNamesWithClientMap2),
 
     Fun = fun(ChatPID) -> ChatPID!{self(), Ref, unregister, ClientPID} end,
 
     lists:foreach(Fun,ChatPIDS),
 
+    Fun2 = fun(_K, V1) -> lists:delete(ClientPID,V1),
 
-    %% PENDING: Remove clients from server registration list
+    FinalRegistration = maps:map(Fun,ChatNamesWithClientMap),
 
-    ClientPID!{self(),Ref,ack_quit}.
+    ClientPID!{self(),Ref,ack_quit},
+
+    State#serv_st{nicks=UpdatedClients, registrations=FinalRegistration}.
 
