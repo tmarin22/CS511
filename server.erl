@@ -110,6 +110,10 @@ do_leave(ChatName, ClientPID, Ref, State) ->
     State#serv_st{registrations=NewRegMap}.
 
 
+send_new_nick([]) -> ok.
+send_new_nick([H|T]) -> H!{self(), Ref, update_nick, ClientPID, NewNick},
+                        send_new_nick(T).
+
 %% executes new nickname protocol from server perspective
 do_new_nick(State, Ref, ClientPID, NewNick) ->
     CurrClients = State#serv_st.nicks,
@@ -119,15 +123,13 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     case lists:member(NewNick,CurrNicks) of
     	true -> ClientPID!{self(), Ref, err_nick_used},
                 State;
-    	false -> UpdatedClients = maps:update(ClientPID,NewNick, CurrClients),
+    	false -> UpdatedClients = maps:update(ClientPID, NewNick, CurrClients),
     				Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     				AllChats = State#serv_st.registrations,
     				ChatsWithClient = maps:filter(Pred,AllChats),
     				ChatPIDS = maps:keys(ChatsWithClient),
 
-    				Fun = fun(ChatPID) -> ChatPID!{self(), Ref, update_nick, ClientPID, NewNick} end,
-
-    				lists:foreach(Fun,ChatPIDS),
+    				send_new_nick(ChatPIDS),
 
     				ClientPID!{self(),Ref,ok_nick},
     				State#serv_st{nicks=UpdatedClients}
