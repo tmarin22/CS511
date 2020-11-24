@@ -110,9 +110,9 @@ do_leave(ChatName, ClientPID, Ref, State) ->
     State#serv_st{registrations=NewRegMap}.
 
 
-send_new_nick([]) -> ok.
-send_new_nick([H|T]) -> H!{self(), Ref, update_nick, ClientPID, NewNick},
-                        send_new_nick(T).
+send_new_nick([], _,_,_) -> ok;
+send_new_nick([H|T], Ref, ClientPID, NewNick) -> H!{self(), Ref, update_nick, ClientPID, NewNick},
+                        send_new_nick(T, Ref, ClientPID, NewNick).
 
 %% executes new nickname protocol from server perspective
 do_new_nick(State, Ref, ClientPID, NewNick) ->
@@ -129,7 +129,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     				ChatsWithClient = maps:filter(Pred,AllChats),
     				ChatPIDS = maps:keys(ChatsWithClient),
 
-    				send_new_nick(ChatPIDS),
+    				send_new_nick(ChatPIDS, Ref, ClientPID, NewNick),
 
     				ClientPID!{self(),Ref,ok_nick},
     				State#serv_st{nicks=UpdatedClients}
