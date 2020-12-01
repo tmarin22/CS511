@@ -163,5 +163,6 @@ do_new_incoming_msg(State, _Ref, CliNick, ChatName, Msg) ->
 do_quit(State, Ref) ->
     whereis(server)!{self(),Ref,quit},
     receive
-        {_Server,Ref,ack_quit} -> {ack_quit,State}
+        {_Server,Ref,ack_quit} -> whereis(list_to_atom(State#cl_st.gui))!{self(), Ref, ack_quit},
+                                  {shutdown,State}.
     end.
