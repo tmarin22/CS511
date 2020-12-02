@@ -142,7 +142,7 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
     				State#serv_st{nicks=UpdatedClients}
     end.
 
-quit_loop(_,_,_, []) -> NewState;
+quit_loop(State,_,_, []) -> State;
 quit_loop(State, ClientPID, Ref, [H|T]) -> NewState = do_leave(H, ClientPID, Ref, State), quit_loop(NewState, ClientPID, Ref, T).
 
 %% executes client quit protocol from server perspective
