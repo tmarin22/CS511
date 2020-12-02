@@ -136,14 +136,14 @@ do_new_nick(State, Ref, ClientPID, NewNick) ->
 
                     ChatPIDS = maps:values(ChatNamesWithClientMap2),
 
-
-
     				send_new_nick(ChatPIDS, Ref, ClientPID, NewNick),
 
     				ClientPID!{self(),Ref,ok_nick},
     				State#serv_st{nicks=UpdatedClients}
     end.
 
+quit_loop(_,_,_, []) -> NewState;
+quit_loop(State, ClientPID, Ref, [H|T]) -> NewState = do_leave(H, ClientPID, Ref, State), quit_loop(NewState, ClientPID, Ref, T).
 
 %% executes client quit protocol from server perspective
 do_client_quit(State, Ref, ClientPID) ->
@@ -151,26 +151,35 @@ do_client_quit(State, Ref, ClientPID) ->
 
     UpdatedClients = maps:remove(ClientPID,CurrClients),
 
+    
     Pred = fun(_K,V) -> lists:member(ClientPID, V) == true end,
     AllChats = State#serv_st.registrations,
     ChatNamesWithClientMap = maps:filter(Pred,AllChats),
-                    
-    ChatNamesWithClient = maps:keys(ChatNamesWithClientMap),
-    CurrChatRooms = State#serv_st.chatrooms,
+    
+    ChatNames = maps:keys(ChatNamesWithClientMap),
 
-    ChatNamesWithClientMap2 = maps:with(ChatNamesWithClient,CurrChatRooms),
+    New_State = quit_loop(State, ClientPID, Ref, ChatNames),
 
-    ChatPIDS = maps:values(ChatNamesWithClientMap2),
+    % Fun = fun(ChatName) -> do_leave(ChatName, ClientPID, Ref, State) end,
 
-    Fun = fun(ChatPID) -> ChatPID!{self(), Ref, unregister, ClientPID} end,
+    % lists:foreach(Fun,ChatNames),
 
-    lists:foreach(Fun,ChatPIDS),
+    % ChatNamesWithClient = maps:keys(ChatNamesWithClientMap),
+    % CurrChatRooms = State#serv_st.chatrooms,
 
-    Fun2 = fun(_K, V1) -> lists:delete(ClientPID,V1) end,
+    % ChatNamesWithClientMap2 = maps:with(ChatNamesWithClient,CurrChatRooms),
 
-    FinalRegistration = maps:map(Fun2,ChatNamesWithClientMap),
+    % ChatPIDS = maps:values(ChatNamesWithClientMap2),
+
+    % Fun = fun(ChatPID) -> ChatPID!{self(), Ref, unregister, ClientPID} end,
+
+    % lists:foreach(Fun,ChatPIDS),
+
+    % Fun2 = fun(_K, V1) -> lists:delete(ClientPID,V1) end,
+
+    % FinalRegistration = maps:map(Fun2,ChatNamesWithClientMap),
 
     ClientPID!{self(),Ref,ack_quit},
 
-    State#serv_st{nicks=UpdatedClients, registrations=FinalRegistration}.
+    New_State#serv_st{nicks=UpdatedClients}
 
