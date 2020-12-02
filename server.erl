@@ -181,5 +181,5 @@ do_client_quit(State, Ref, ClientPID) ->
 
     ClientPID!{self(),Ref,ack_quit},
 
-    New_State#serv_st{nicks=UpdatedClients}
+    New_State#serv_st{nicks=UpdatedClients}.
 
